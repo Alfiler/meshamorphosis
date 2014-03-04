@@ -133,7 +133,7 @@ public class SU2 implements FormatInterface {
 	
 	private String getLine(Scanner sc){
 		String linea = sc.nextLine();
-		while (linea.matches("\\s*%\\w*") || linea.matches("\\s*")){
+		while (linea.matches("\\s*%(\\w|\\W)*") || linea.matches("\\s*")){
 			linea = sc.nextLine();
 		}
 		return linea;
