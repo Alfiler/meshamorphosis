@@ -24,7 +24,7 @@ public class SU2 implements FormatInterface {
 
 	public boolean read(Path in, Mesh m) throws FileNotFoundException {
 		Scanner sc = new Scanner(new File(in.toString()));
-		String linea = sc.nextLine();
+		String linea = getLine(sc);
 		Pattern patern = Pattern.compile("(\\w+)=\\s*(\\d+)");
 		Matcher match = patern.matcher(linea);
 		System.out.println(match.matches()+" "+match.group(0)+" |"+match.group(1)+"|");
@@ -34,7 +34,7 @@ public class SU2 implements FormatInterface {
 		}
 		dimensions = Integer.parseInt(match.group(2));
 		//elements
-		linea = sc.nextLine();
+		linea = getLine(sc);
 		match = patern.matcher(linea);
 		if (!match.matches() || !match.group(1).matches("NELEM")){
 			sc.close();
@@ -42,7 +42,7 @@ public class SU2 implements FormatInterface {
 		}
 		elem = Integer.parseInt(match.group(2));
 		for (int i=0; i<elem; i++){
-			linea = sc.nextLine();
+			linea = getLine(sc);
 			String[] str_elements = linea.split("\t");
 			ElementType et = null;
 			ArrayList<Integer> lis = new ArrayList<Integer>();
@@ -61,7 +61,7 @@ public class SU2 implements FormatInterface {
 			
 		}
 		//points
-		linea = sc.nextLine();
+		linea = getLine(sc);
 
 		match = patern.matcher(linea);
 		if (!match.matches() || !match.group(1).matches("NPOIN")){
@@ -70,7 +70,7 @@ public class SU2 implements FormatInterface {
 		}
 		points = Integer.parseInt(match.group(2));
 		for (int i=0; i<points; i++){
-			linea = sc.nextLine();
+			linea = getLine(sc);
 			String[] str_points = linea.split("\t");
 			System.out.println(str_points[1]+" | "+new BigDecimal(str_points[1])+" | "+(new BigDecimal(str_points[1])).toEngineeringString()+" | "+(new BigDecimal(str_points[1])).toString());
 			switch (dimensions){
@@ -129,5 +129,13 @@ public class SU2 implements FormatInterface {
 		writer.flush();
 		writer.close();
 		return true;
+	}
+	
+	private String getLine(Scanner sc){
+		String linea = sc.nextLine();
+		while (linea.matches("\\s*%\\w*") || linea.matches("\\s*")){
+			linea = sc.nextLine();
+		}
+		return linea;
 	}
 }
