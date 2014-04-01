@@ -66,9 +66,9 @@ public class Points {
 		boolean yzero = false;
 		boolean zzero = false;
 		while (i<pointsList.size() && (!xzero || !yzero || !zzero)){
-			xzero = xzero || (pointsList.get(i).getX().compareTo(bdzerovalue)==0);
-			yzero = yzero || (pointsList.get(i).getY().compareTo(bdzerovalue)==0);
-			zzero = zzero || (pointsList.get(i).getZ().compareTo(bdzerovalue)==0);
+			xzero = xzero || (pointsList.get(i).getX().compareTo(bdzerovalue)!=0);
+			yzero = yzero || (pointsList.get(i).getY().compareTo(bdzerovalue)!=0);
+			zzero = zzero || (pointsList.get(i).getZ().compareTo(bdzerovalue)!=0);
 			i++;
 		}
 		int dim = 0;

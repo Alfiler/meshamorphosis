@@ -10,12 +10,13 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import data.Elements.Element;
 import data.Elements.ElementType;
 import data.Mesh;
 
 public class GIDMSH implements FormatInterface{
 
-	public boolean read(Path in, Mesh m) throws FileNotFoundException {
+	public boolean read(Path in, Mesh m) throws Exception {
 		Scanner s = new Scanner(new File(in.toString()));
 		String line = s.nextLine();
 		ElementType[] values = ElementType.values();
@@ -44,7 +45,7 @@ public class GIDMSH implements FormatInterface{
 		line = s.nextLine();
 		while(!line.matches("End Coordinates")){
 			String[] coord = line.split("\\s+");
-			m.p.add(new BigDecimal(coord[2]), new BigDecimal(coord[3]), new BigDecimal(coord[4]));
+			m.mPoints.add(new BigDecimal(coord[2]), new BigDecimal(coord[3]), new BigDecimal(coord[4]));
 			line = s.nextLine();
 		}
 		s.nextLine();
@@ -60,7 +61,7 @@ public class GIDMSH implements FormatInterface{
 			for (int i=1; i<elemStr.length; i++){
 				listElem.add(Integer.parseInt(elemStr[i]));
 			}
-			m.e.add(m.e.new Element(e, listElem));
+			m.mElements.add(new Element(e, listElem));
 			line = s.nextLine();
 		}
 		s.close();
@@ -70,6 +71,13 @@ public class GIDMSH implements FormatInterface{
 	public boolean write(Path out, Mesh m) throws IOException {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	
+	public boolean getBordersFromNodesList(Path nodesListFile) throws FileNotFoundException{
+		Scanner s = new Scanner(new File(nodesListFile.toString()));
+		
+		
+		return true;
 	}
 
 }

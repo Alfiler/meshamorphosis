@@ -8,12 +8,17 @@ import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import data.Elements;
+import data.Elements.Element;
 import data.Elements.ElementType;
+import data.Extra.BorderMarkers;
 import data.Mesh;
 
 public class SU2 implements FormatInterface {
@@ -22,7 +27,7 @@ public class SU2 implements FormatInterface {
 	private int elem;
 	private int points;
 
-	public boolean read(Path in, Mesh m) throws FileNotFoundException {
+	public boolean read(Path in, Mesh m) throws Exception {
 		Scanner sc = new Scanner(new File(in.toString()));
 		String linea = getLine(sc);
 		Pattern patern = Pattern.compile("(\\w+)=\\s*(\\d+)");
@@ -57,8 +62,8 @@ public class SU2 implements FormatInterface {
 			case 13: et = ElementType.Wedge; lis.add(Integer.parseInt(str_elements[3])); lis.add(Integer.parseInt(str_elements[4])); lis.add(Integer.parseInt(str_elements[5])); lis.add(Integer.parseInt(str_elements[6])); break;
 			case 14: et = ElementType.Pyramid; lis.add(Integer.parseInt(str_elements[3])); lis.add(Integer.parseInt(str_elements[4])); lis.add(Integer.parseInt(str_elements[5])); break;
 			}
-			m.e.add(m.e.new Element(et, lis));
-			
+			m.mElements.add(new Element(et, lis));
+
 		}
 		//points
 		linea = getLine(sc);
@@ -74,9 +79,9 @@ public class SU2 implements FormatInterface {
 			String[] str_points = linea.split("\t");
 			System.out.println(str_points[1]+" | "+new BigDecimal(str_points[1])+" | "+(new BigDecimal(str_points[1])).toEngineeringString()+" | "+(new BigDecimal(str_points[1])).toString());
 			switch (dimensions){
-			case 1: m.p.add(new BigDecimal(str_points[1])); break;
-			case 2: m.p.add(new BigDecimal(str_points[1]), new BigDecimal(str_points[2])); break;
-			case 3: m.p.add(new BigDecimal(str_points[1]), new BigDecimal(str_points[2]), new BigDecimal(str_points[3])); break;
+			case 1: m.mPoints.add(new BigDecimal(str_points[1])); break;
+			case 2: m.mPoints.add(new BigDecimal(str_points[1]), new BigDecimal(str_points[2])); break;
+			case 3: m.mPoints.add(new BigDecimal(str_points[1]), new BigDecimal(str_points[2]), new BigDecimal(str_points[3])); break;
 			}
 		}
 		sc.close();
@@ -86,56 +91,97 @@ public class SU2 implements FormatInterface {
 	public boolean write(Path out, Mesh m) throws IOException {
 		BufferedWriter writer = Files.newBufferedWriter(
 				out, Charset.defaultCharset());
-		writer.append("NDIME= "+m.p.getDimensions());
+		writer.append("NDIME= "+m.mPoints.getDimensions());
 		writer.newLine();
-		writer.append("NELEM= "+m.e.size());
+		writer.append("NELEM= "+m.mElements.size());
 		writer.newLine();
 
-		for (int i=0; i<m.e.size(); i++){
-			int id = 0;
-			switch (m.e.get(i).getType()){
-			case Line:id = 3; break;
-			case Triangle:id = 5; break;
-			case Rectangle:id = 9; break;
-			case Tetrahedral:id = 10; break;
-			case Hexahedral:id = 12; break;
-			case Wedge:id = 13; break;
-			case Pyramid:id = 14; break;
-			}
+		for (int i=0; i<m.mElements.size(); i++){
+			int id = correspondence(m.mElements.get(i).getType());
+
 			writer.append(Integer.toString(id));
 			writer.append("\t");
-			for (int j=0; j<m.e.get(i).getNumberOfPoints(); j++){
-				writer.append(Integer.toString(m.e.get(i).get(j)));
+			for (int j=0; j<m.mElements.get(i).getNumberOfPoints(); j++){
+				writer.append(Integer.toString(m.mElements.get(i).get(j)));
 				writer.append("\t");
 			}
 			writer.append(Integer.toString(i));
 			writer.newLine();
 		}
 
-		writer.append("NPOIN= "+m.p.size());
+		writer.append("NPOIN= "+m.mPoints.size());
 		writer.newLine();
 
-		for (int i=0; i<m.p.size(); i++){
+		DecimalFormat format = new DecimalFormat("0.##################E00");
+		format.setMinimumFractionDigits(15);
+		DecimalFormatSymbols temp = format.getDecimalFormatSymbols();
+		temp.setDecimalSeparator('.');
+		temp.setExponentSeparator("e");
+		format.setDecimalFormatSymbols(temp);
+
+		for (int i=0; i<m.mPoints.size(); i++){
 			String linea = "";
-			switch(m.p.getDimensions()){
-			case 3: linea = "\t"+m.p.get(i).getZ().toEngineeringString()+linea;
-			case 2: linea = "\t"+m.p.get(i).getY().toEngineeringString()+linea;
-			case 1: linea = "\t"+m.p.get(i).getX().toEngineeringString()+linea;
+			String sresult = "";
+			switch(m.mPoints.getDimensions()){
+			case 3: sresult = format.format(m.mPoints.get(i).getZ());
+			if (!sresult.contains("e-")) { //don't blast a negative sign
+				sresult = sresult.replace("e", "e+");
+			}
+			linea = "\t"+sresult+linea;
+			case 2: sresult = format.format(m.mPoints.get(i).getY());
+			if (!sresult.contains("e-")) { //don't blast a negative sign
+				sresult = sresult.replace("e", "e+");
+			}
+			linea = "\t"+sresult+linea;
+			case 1: sresult = format.format(m.mPoints.get(i).getX());
+			if (!sresult.contains("e-")) { //don't blast a negative sign
+				sresult = sresult.replace("e", "e+");
+			}
+			linea = "\t"+sresult+linea;
 			}
 			linea = linea +"\t"+Integer.toString(i);
 			writer.append(linea);
 			writer.newLine();
 		}
+
+		if (m.existExtra(Mesh.MARKER_TAGS)){
+			BorderMarkers bm = (BorderMarkers) m.getExtra(Mesh.MARKER_TAGS);
+			writer.append("NMARK= "+bm.getTags().size());
+			writer.newLine();
+			for (String tag:bm.getTags()){
+				Elements tagborder = bm.get(tag);
+				writer.append("MARKER_TAG= ".concat(tag));
+				writer.newLine();
+				writer.append("MARKER_ELEMS= ".concat(""+tagborder.size()));
+				writer.newLine();
+				for (int i=0; i<tagborder.size(); i++){
+					writer.append(""+correspondence(tagborder.get(i).getType())+"\t"+tagborder.get(i).toString("\t"));
+					writer.newLine();
+				}
+			}
+		}
+
 		writer.flush();
 		writer.close();
 		return true;
 	}
-	
+
 	private String getLine(Scanner sc){
 		String linea = sc.nextLine();
 		while (linea.matches("\\s*%(\\w|\\W)*") || linea.matches("\\s*")){
 			linea = sc.nextLine();
 		}
 		return linea;
+	}
+	private int correspondence(ElementType etype){
+		switch (etype){
+		case Line:return 3; 
+		case Triangle:return 5; 
+		case Rectangle:return 9; 
+		case Tetrahedral:return 10; 
+		case Hexahedral:return 12; 
+		case Wedge:return 13; 
+		default :return 14; //pyramid
+		}
 	}
 }
