@@ -34,8 +34,13 @@ public class App
 		List<BorderMarkerInfo> border = new ArrayList<Extra.BorderMarkerInfo>();
 		BorderMarkerInfo bmi = new Extra.BorderMarkerInfo();
 		bmi.ini = 1411;
-		bmi.end = bmi.ini;
+		bmi.end = 775;
 		bmi.name = "todo";
+		border.add(bmi);
+		bmi = new Extra.BorderMarkerInfo();
+		bmi.ini = 1385;
+		bmi.end = 794;
+		bmi.name = "todo2";
 		border.add(bmi);
 		
 		List<Integer> lista = extractBorderNodes(Paths.get("C:\\Users\\Alf\\Desktop\\listado borde.txt"));

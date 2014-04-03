@@ -141,7 +141,7 @@ public class Mesh {
 						isFirst = true;
 						for (BorderMarkerInfo j:listOfBorders){
 							if (border!=j){
-								isFirst = isFirst && !(be.get(other)!=j.ini || be.get(other)!=j.end);
+								isFirst = isFirst && !(be.get(other)==j.ini || be.get(other)==j.end);
 							}
 						}
 					}

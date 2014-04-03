@@ -26,7 +26,7 @@ public class Elements {
 			case Hexahedral: valid = listElem.size()==8; break;
 			}
 			if (!valid){
-				throw new Exception("The type and the list of points arent valid");
+				throw new Exception("The type and the list of points aren't valid");
 			}
 			this.conectedPoints = listElem;
 			this.type = type;
