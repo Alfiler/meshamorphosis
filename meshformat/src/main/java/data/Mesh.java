@@ -130,25 +130,27 @@ public class Mesh {
 			for (BorderMarkerInfo border:listOfBorders){
 				Elements extraBorder = new Elements();
 				Element be = null;
-				int other = 0;
+				int conected = 0;
 				boolean isFirst = false;
 				for (int becount = 0; becount<listOfBorderElements.size() && !isFirst; becount++){
 					be=listOfBorderElements.get(becount);
 					if (be.get(0)==border.ini || be.get(1)==border.ini){
 						if (be.get(0)==border.ini){
-							other = 1;
+							conected = be.get(1);
+						} else {
+							conected = be.get(0);
 						}
 						isFirst = true;
 						for (BorderMarkerInfo j:listOfBorders){
 							if (border!=j){
-								isFirst = isFirst && !(be.get(other)==j.ini || be.get(other)==j.end);
+								isFirst = isFirst && !(conected==j.ini || conected==j.end);
 							}
 						}
 					}
 				}
 
 				Element lastElement = be;
-				int nextValue = be.get(other);
+				int nextValue = conected;
 				extraBorder.add(be);
 				while (nextValue!=border.end){//if the end wasn't found
 					for (int counter=0; counter < listOfBorderElements.size() && nextValue!=border.end; counter++){
