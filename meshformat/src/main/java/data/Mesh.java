@@ -152,7 +152,7 @@ public class Mesh {
 				Element lastElement = be;
 				int nextValue = conected;
 				extraBorder.add(be);
-				while (nextValue!=border.end){//if the end wasn't found
+				while (nextValue!=border.end && !contains(nextValue, listOfBorders)){//if the end wasn't found
 					for (int counter=0; counter < listOfBorderElements.size() && nextValue!=border.end; counter++){
 						Element borderElement = listOfBorderElements.get(counter);
 						if (borderElement!=lastElement){
@@ -168,8 +168,6 @@ public class Mesh {
 						}
 					}
 				}
-
-
 				//insert the elements of the border in extras
 				borderMarkers.add(border.name, extraBorder);
 			}
@@ -179,22 +177,16 @@ public class Mesh {
 			return true;
 		}
 
-		for (Element e:listOfBorderElements){
-			String s = "";
-			for (int i=0; i<e.getNumberOfPoints(); i++){
-				s += " "+e.get(i);
-			}
-		}
-
-		System.out.println(listOfBorderElements.size());
-
-		Element orig = listOfBorderElements.get(0);
-		List<Element> loop = new ArrayList<Elements.Element>();
-		loop.add(orig);
-		while (orig.get(1).compareTo(loop.get(loop.size()-1).get(0))!=0 && orig.get(1).compareTo(loop.get(loop.size()-1).get(1))!=0 ){
-
-		}
-
+		
 		return true;
 	}
-}
+	
+	private boolean contains(int nextValue, List<BorderMarkerInfo> listOfBorders){
+			for (BorderMarkerInfo border:listOfBorders){
+				if (border.ini == nextValue || border.end==nextValue){
+					return true;
+				}
+			}
+			return false;
+		}
+	}

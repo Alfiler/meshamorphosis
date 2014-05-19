@@ -59,7 +59,7 @@ public class GIDMSH implements FormatInterface{
 			String[] elemStr = line.split("\\s+");
 			ArrayList<Integer> listElem = new ArrayList<Integer>();
 			for (int i=1; i<elemStr.length; i++){
-				listElem.add(Integer.parseInt(elemStr[i]));
+				listElem.add(Integer.parseInt(elemStr[i])-1);
 			}
 			m.mElements.add(new Element(e, listElem));
 			line = s.nextLine();

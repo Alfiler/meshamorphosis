@@ -25,13 +25,13 @@ public class App
 	public static void main( String[] args )
 	{
 
-		Path f = Paths.get("C:\\Users\\Alf\\Desktop\\malla.msh"); 
-		Path out = Paths.get("C:\\SU2\\ejemplo\\mesh_NACA0012_inv.su2");
-		Path out2 = Paths.get("C:\\yepeee2.txt");
+		Path f = Paths.get("C:\\Users\\Alf\\Desktop\\channel propio gid\\channel propio gid.msh"); 
+		//Path out = Paths.get("C:\\SU2\\ejemplo\\mesh_NACA0012_inv.su2");
+		Path out2 = Paths.get("C:\\SU2\\channel propio gid\\mesh_channel_256x128.txt");
 		GIDMSH s = new GIDMSH();
 		SU2 outs = new SU2();
 		Mesh m = new Mesh();
-		List<BorderMarkerInfo> border = new ArrayList<Extra.BorderMarkerInfo>();
+		/*List<BorderMarkerInfo> border = new ArrayList<Extra.BorderMarkerInfo>();
 		BorderMarkerInfo bmi = new Extra.BorderMarkerInfo();
 		bmi.ini = 6020;
 		bmi.end = 991;
@@ -61,12 +61,12 @@ public class App
 		bmi.ini = 8589;
 		bmi.end = 6182;
 		bmi.name = "izq";
-		border.add(bmi);
+		border.add(bmi);*/
 		
 		List<Integer> lista = extractBorderNodes(Paths.get("C:\\Users\\Alf\\Desktop\\listado borde.txt"));
 				try {
 					s.read(f, m);
-					m.addBordersMarkers(lista, border);
+					//m.addBordersMarkers(lista, border);
 					outs.write(out2, m);
 				} catch (FileNotFoundException e) {
 					// TODO Auto-generated catch block
