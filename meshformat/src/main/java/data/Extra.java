@@ -7,7 +7,17 @@ public class Extra {
 
 	public static class BorderMarkerInfo{
 		public String name;
-		public int ini, end;
+		public int[] borderNodes;
+		public int insideNode;
+		
+		public boolean isBorderNode(int node){
+			for (int i:borderNodes){
+				if (i==node){
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 	
 	public static class BorderMarkers{

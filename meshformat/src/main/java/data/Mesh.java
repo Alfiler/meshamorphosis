@@ -4,37 +4,75 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 import data.Elements.Element;
 import data.Elements.ElementType;
 import data.Extra.BorderMarkerInfo;
 import data.Extra.BorderMarkers;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class Mesh.
+ */
 public class Mesh {
+
+	/** The marker tags. */
 	public static String MARKER_TAGS = "MARKER_TAGS";
-	
+
+	/** The points. */
 	public Points mPoints;
+
+	/** The elements. */
 	public Elements mElements;
+
+	/** The extras of the mesh. */
 	private HashMap<String, Object> extras;
 
+	/**
+	 * Instantiates a new mesh.
+	 */
 	public Mesh(){
 		mPoints = new Points();
 		mElements = new Elements();
 		extras = new HashMap<String, Object>();
 	}
 
+	/**
+	 * Put extra.
+	 *
+	 * @param name the name
+	 * @param object the object
+	 */
 	public void putExtra(String name, Object object){
 		extras.put(name, object);
 	}
-	
+
+	/**
+	 * Exist a extra.
+	 *
+	 * @param name of the extra
+	 * @return true, if successful
+	 */
 	public boolean existExtra(String name){
 		return extras.containsKey(name);
 	}
 
+	/**
+	 * Gets the extra.
+	 *
+	 * @param name the name
+	 * @return the extra
+	 */
 	public Object getExtra(String name){
 		return extras.get(name);
 	}
 
+	/**
+	 * Gets the dimensions of the mesh.
+	 *
+	 * @return the dimensions
+	 */
 	public int getDimensions(){
 		if (mPoints==null){
 			return -1;
@@ -42,7 +80,15 @@ public class Mesh {
 		return mPoints.getDimensions();
 	}
 
-	public boolean addBordersMarkers(List<Integer> listOfNodes,List<BorderMarkerInfo> listOfBorders) throws Exception{
+	/**
+	 * Adds the borders markers.
+	 *
+	 * @param listOfNodes the list of border nodes of the mesh
+	 * @param listOfBorders the information of the borders
+	 * @return true, if successful
+	 * @throws Exception the exception
+	 */
+	public boolean addBordersMarkers(List<Integer> listOfNodes,List<BorderMarkerInfo> listOfBorders){
 		if (mElements==null || mPoints ==null){
 			return false;
 		}
@@ -57,136 +103,90 @@ public class Mesh {
 		}
 		Collections.sort(listOfNodes);
 
-		List<Element> listOfBorderElements = new ArrayList<Elements.Element>();
-		for (int elements = 0; elements<mElements.size(); elements++){
-			//the node is part of this element
-			Element element = mElements.get(elements);
-			for (int i=0; i<listOfNodes.size(); i++){
-				if (element.hasNode(listOfNodes.get(i))){
-					for (int j=i+1; j<listOfNodes.size(); j++){//lets search the rest
-						if (element.hasNode(listOfNodes.get(j))){//are from the same element
-							if (element.areConectedNodes(listOfNodes.get(i), listOfNodes.get(j))){//are connected between them
+		BorderMarkers bm = new BorderMarkers();
 
-								ArrayList<Integer> templist = new ArrayList<Integer>();
-								templist.add(listOfNodes.get(i));
-								templist.add(listOfNodes.get(j));
-								listOfBorderElements.add(new Element(ElementType.Line, templist));
-
-							}
-						}
+		Elements listOfBorderElements = getAllBorderElements(listOfNodes, getDimensions());
+		for (BorderMarkerInfo bmi:listOfBorders){
+			Stack<Integer> internalNodes = new Stack<Integer>();
+			internalNodes.push(bmi.insideNode);
+			Stack<Integer> usedNodes = new Stack<Integer>();
+			for(int bn:bmi.borderNodes){ //border nodes added as used nodes to decrease complexity in code
+				usedNodes.add(bn);
+			}
+			Elements listOfMarkerElements = new Elements();//the place to save the elements of this marker
+			while (!internalNodes.empty()){
+				int node = internalNodes.pop();
+				usedNodes.push(node);
+				Elements elements =  listOfBorderElements.getElementsWithNode(node);
+				List<Integer> nodes = elements.getNodes();
+				for (int n:nodes){
+					if (!usedNodes.contains(n)){
+						internalNodes.add(n);
 					}
 				}
+				listOfMarkerElements.add(elements);
 			}
+			bm.add(bmi.name, listOfMarkerElements);
 		}
-
-		Collections.sort(listOfBorderElements);
-		System.out.println(listOfBorderElements.size());
-
-		for (int i=0; i<listOfBorderElements.size(); i++){
-			for (int j=i+1; j<listOfBorderElements.size(); j++){
-				if (0==listOfBorderElements.get(i).compareTo(listOfBorderElements.get(j))){
-					listOfBorderElements.remove(j);
-					j--;
-				}
-			}
-		}
-
-		if (getDimensions()==2){
-			HashMap<Integer, ArrayList<Element>> pointCounter = new HashMap<Integer, ArrayList<Element>>();
-			ArrayList<Integer> nonlinearNodes = new ArrayList<Integer>();
-			for (Element e:listOfBorderElements){
-				for(int i=0; i<e.numberOfPoints(); i++){
-					if (pointCounter.containsKey(e.get(i))) {
-						pointCounter.get(e.get(i)).add(e);
-
-						if (pointCounter.get(e.get(i)).size()==3){
-							nonlinearNodes.add(e.get(i));
-						}
-
-					} else {
-						ArrayList<Element> elemArray = new ArrayList<Element>();
-						elemArray.add(e);
-						pointCounter.put(e.get(i), elemArray);
-					}
-				}
-			}
-
-			Collections.sort(nonlinearNodes);
-			for (int i=0; i< nonlinearNodes.size(); i++){
-				int valueI = nonlinearNodes.get(i);
-				for (int j=i+1; j<nonlinearNodes.size(); j++){
-					int valueJ = nonlinearNodes.get(j);
-					for(Element e:pointCounter.get(valueI)){
-						if (e.areConectedNodes(valueI, valueJ)){
-							listOfBorderElements.remove(e);
-						}
-					}
-				}
-			}
-
-			BorderMarkers borderMarkers = new Extra.BorderMarkers();
-			putExtra(MARKER_TAGS, borderMarkers);
-
-			for (BorderMarkerInfo border:listOfBorders){
-				Elements extraBorder = new Elements();
-				Element be = null;
-				int conected = 0;
-				boolean isFirst = false;
-				for (int becount = 0; becount<listOfBorderElements.size() && !isFirst; becount++){
-					be=listOfBorderElements.get(becount);
-					if (be.get(0)==border.ini || be.get(1)==border.ini){
-						if (be.get(0)==border.ini){
-							conected = be.get(1);
-						} else {
-							conected = be.get(0);
-						}
-						isFirst = true;
-						for (BorderMarkerInfo j:listOfBorders){
-							if (border!=j){
-								isFirst = isFirst && !(conected==j.ini || conected==j.end);
-							}
-						}
-					}
-				}
-
-				Element lastElement = be;
-				int nextValue = conected;
-				extraBorder.add(be);
-				while (nextValue!=border.end && !contains(nextValue, listOfBorders)){//if the end wasn't found
-					for (int counter=0; counter < listOfBorderElements.size() && nextValue!=border.end; counter++){
-						Element borderElement = listOfBorderElements.get(counter);
-						if (borderElement!=lastElement){
-							if (listOfBorderElements.get(counter).get(0)==nextValue){
-								lastElement = listOfBorderElements.get(counter);
-								nextValue = lastElement.get(1);
-								extraBorder.add(lastElement);
-							} else if (listOfBorderElements.get(counter).get(1)==nextValue){
-								lastElement = listOfBorderElements.get(counter);
-								nextValue = lastElement.get(0);
-								extraBorder.add(lastElement);
-							}
-						}
-					}
-				}
-				//insert the elements of the border in extras
-				borderMarkers.add(border.name, extraBorder);
-			}
-
-
-			//putExtra(name, object);
-			return true;
-		}
-
-		
+		this.putExtra(MARKER_TAGS, bm);
 		return true;
 	}
-	
-	private boolean contains(int nextValue, List<BorderMarkerInfo> listOfBorders){
-			for (BorderMarkerInfo border:listOfBorders){
-				if (border.ini == nextValue || border.end==nextValue){
-					return true;
+
+	/**
+	 * Gets the elements of a given dimension of the mesh formed by a list of nodes.
+	 *
+	 * @param listOfNodes the list of nodes
+	 * @param dimensions the dimensions
+	 * @return the all elements
+	 */
+	private Elements getAllElements(List<Integer> listOfNodes, int dimensions){
+		Elements result = new Elements();
+		Element e = null;
+		for (int i=0; i<listOfNodes.size(); i++){
+			int counter = 0;
+			for (int j=i+1; j<listOfNodes.size(); j++){
+				if (dimensions==2){
+					e = mElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j)});
+					if (e!=null){
+						result.add(e);
+						counter++;
+					}
+				} else if (dimensions==3){
+					for (int k=j+1; k<listOfNodes.size(); k++){
+						e = mElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j),listOfNodes.get(k)});
+						if (e!=null){
+							result.add(e);
+						}
+						for (int l=k+1; l<listOfNodes.size(); l++){
+							e = mElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j),listOfNodes.get(k),listOfNodes.get(l)});
+							if (e!=null && e.getType()==ElementType.Rectangle){
+								result.add(e);
+							}
+						}
+					}
 				}
 			}
-			return false;
+
 		}
+		return result;
 	}
+
+	private Elements getAllBorderElements(List<Integer> listOfNodes, int dimensions){
+		Elements result = getAllElements(listOfNodes, dimensions);
+		for(int i=0; i<listOfNodes.size(); i++){
+			Elements e1 = result.getElementsWithNode(listOfNodes.get(i));
+			if (dimensions==2 && e1.size()>2){
+				for (int j=i+1; j<listOfNodes.size(); j++){
+					Elements e2 = result.getElementsWithNode(listOfNodes.get(j));
+					if (e2.size()>2){
+						Element notBorderElement = result.formAElement(new int[]{listOfNodes.get(i), listOfNodes.get(j)});
+						if (notBorderElement!=null){
+							result.remove(notBorderElement);
+						}
+					}
+				}
+			}
+		}
+		return result;
+	}
+}

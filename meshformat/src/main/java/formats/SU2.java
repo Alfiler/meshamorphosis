@@ -50,17 +50,17 @@ public class SU2 implements FormatInterface {
 			linea = getLine(sc);
 			String[] str_elements = linea.split("\t");
 			ElementType et = null;
-			ArrayList<Integer> lis = new ArrayList<Integer>();
-			lis.add(Integer.parseInt(str_elements[1]));
-			lis.add(Integer.parseInt(str_elements[2]));
+			int[] lis = new int[str_elements.length-1];
+			lis[0]=Integer.parseInt(str_elements[1]);
+			lis[1]=(Integer.parseInt(str_elements[2]));
 			switch (Integer.parseInt(str_elements[0])){
 			case 3: et = ElementType.Line; break;
-			case 5: et = ElementType.Triangle; lis.add(Integer.parseInt(str_elements[3])); break;
-			case 9: et = ElementType.Rectangle; lis.add(Integer.parseInt(str_elements[3])); lis.add(Integer.parseInt(str_elements[4])); break;
-			case 10: et = ElementType.Tetrahedral; lis.add(Integer.parseInt(str_elements[3])); lis.add(Integer.parseInt(str_elements[4])); break;
-			case 12: et = ElementType.Hexahedral; lis.add(Integer.parseInt(str_elements[3])); lis.add(Integer.parseInt(str_elements[4])); lis.add(Integer.parseInt(str_elements[5])); lis.add(Integer.parseInt(str_elements[6])); lis.add(Integer.parseInt(str_elements[7])); lis.add(Integer.parseInt(str_elements[8])); break;
-			case 13: et = ElementType.Wedge; lis.add(Integer.parseInt(str_elements[3])); lis.add(Integer.parseInt(str_elements[4])); lis.add(Integer.parseInt(str_elements[5])); lis.add(Integer.parseInt(str_elements[6])); break;
-			case 14: et = ElementType.Pyramid; lis.add(Integer.parseInt(str_elements[3])); lis.add(Integer.parseInt(str_elements[4])); lis.add(Integer.parseInt(str_elements[5])); break;
+			case 5: et = ElementType.Triangle; lis[2]=(Integer.parseInt(str_elements[3])); break;
+			case 9: et = ElementType.Rectangle; lis[2]=(Integer.parseInt(str_elements[3])); lis[3]=(Integer.parseInt(str_elements[4])); break;
+			case 10: et = ElementType.Tetrahedral; lis[2]=(Integer.parseInt(str_elements[3])); lis[3]=(Integer.parseInt(str_elements[4])); break;
+			case 12: et = ElementType.Hexahedral; lis[2]=(Integer.parseInt(str_elements[3])); lis[3]=(Integer.parseInt(str_elements[4])); lis[4]=(Integer.parseInt(str_elements[5])); lis[5]=(Integer.parseInt(str_elements[6])); lis[6]=(Integer.parseInt(str_elements[7])); lis[7]=(Integer.parseInt(str_elements[8])); break;
+			case 13: et = ElementType.Wedge; lis[2]=(Integer.parseInt(str_elements[3])); lis[3]=(Integer.parseInt(str_elements[4])); lis[4]=(Integer.parseInt(str_elements[5])); lis[5]=(Integer.parseInt(str_elements[6])); break;
+			case 14: et = ElementType.Pyramid; lis[2]=(Integer.parseInt(str_elements[3])); lis[3]=(Integer.parseInt(str_elements[4])); lis[4]=(Integer.parseInt(str_elements[5])); break;
 			}
 			m.mElements.add(new Element(et, lis));
 

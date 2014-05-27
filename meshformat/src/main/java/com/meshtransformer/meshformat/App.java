@@ -25,48 +25,43 @@ public class App
 	public static void main( String[] args )
 	{
 
-		Path f = Paths.get("C:\\Users\\Alf\\Desktop\\channel propio gid\\channel propio gid.msh"); 
+		Path f = Paths.get("C:\\Users\\Alf\\Desktop\\channel propio gid\\channel propio gid grande.msh"); 
 		//Path out = Paths.get("C:\\SU2\\ejemplo\\mesh_NACA0012_inv.su2");
-		Path out2 = Paths.get("C:\\SU2\\channel propio gid\\mesh_channel_256x128.txt");
+		Path out2 = Paths.get("C:\\SU2\\channel propio gid\\channel propio gid grande con bordes.txt");
 		GIDMSH s = new GIDMSH();
 		SU2 outs = new SU2();
 		Mesh m = new Mesh();
-		/*List<BorderMarkerInfo> border = new ArrayList<Extra.BorderMarkerInfo>();
+		List<BorderMarkerInfo> border = new ArrayList<Extra.BorderMarkerInfo>();
+		
 		BorderMarkerInfo bmi = new Extra.BorderMarkerInfo();
-		bmi.ini = 6020;
-		bmi.end = 991;
-		bmi.name = "vIz";
+		bmi.borderNodes = new int[]{0, 59};
+		bmi.insideNode = 39;
+		bmi.name = "inlet";
 		border.add(bmi);
+		
 		bmi = new Extra.BorderMarkerInfo();
-		bmi.ini = 976;
-		bmi.end = 1057;
-		bmi.name = "abajo";
+		bmi.borderNodes = new int[]{0, 165};
+		bmi.name = "lower_wall";
+		bmi.insideNode = 75;
 		border.add(bmi);
+		
 		bmi = new Extra.BorderMarkerInfo();
-		bmi.ini = 1075;
-		bmi.end = 6897;
-		bmi.name = "vDer";
+		bmi.borderNodes = new int[]{165, 175};
+		bmi.name = "outlet";
+		bmi.insideNode = 174;
 		border.add(bmi);
+		
 		bmi = new Extra.BorderMarkerInfo();
-		bmi.ini = 7019;
-		bmi.end = 8692;
-		bmi.name = "der";
+		bmi.borderNodes = new int[]{59, 175};
+		bmi.name = "upper_wall";
+		bmi.insideNode = 102;
 		border.add(bmi);
-		bmi = new Extra.BorderMarkerInfo();
-		bmi.ini = 8658;
-		bmi.end = 8564;
-		bmi.name = "vUp";
-		border.add(bmi);
-		bmi = new Extra.BorderMarkerInfo();
-		bmi.ini = 8589;
-		bmi.end = 6182;
-		bmi.name = "izq";
-		border.add(bmi);*/
+		
 		
 		List<Integer> lista = extractBorderNodes(Paths.get("C:\\Users\\Alf\\Desktop\\listado borde.txt"));
 				try {
 					s.read(f, m);
-					//m.addBordersMarkers(lista, border);
+					m.addBordersMarkers(lista, border);
 					outs.write(out2, m);
 				} catch (FileNotFoundException e) {
 					// TODO Auto-generated catch block
@@ -90,7 +85,7 @@ public class App
 			while(s.hasNext()){
 				line = s.nextLine();
 				String[] coord = line.split("\\s+");
-				ret.add(Integer.parseInt(coord[0]));
+				ret.add(Integer.parseInt(coord[0])-1);
 			}
 			s.close();
 		} catch (FileNotFoundException e) {
