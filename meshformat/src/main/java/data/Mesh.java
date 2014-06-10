@@ -3,8 +3,11 @@ package data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 import data.Elements.Element;
 import data.Elements.ElementType;
@@ -86,7 +89,6 @@ public class Mesh {
 	 * @param listOfNodes the list of border nodes of the mesh
 	 * @param listOfBorders the information of the borders
 	 * @return true, if successful
-	 * @throws Exception the exception
 	 */
 	public boolean addBordersMarkers(List<Integer> listOfNodes,List<BorderMarkerInfo> listOfBorders){
 		if (mElements==null || mPoints ==null){
@@ -101,36 +103,66 @@ public class Mesh {
 				}
 			}
 		}
-		Collections.sort(listOfNodes);
+		//Collections.sort(listOfNodes);
 
 		BorderMarkers bm = new BorderMarkers();
 
-		Elements listOfBorderElements = getAllBorderElements(listOfNodes, getDimensions());
+		Elements borderElements = getAllBorderElements(listOfNodes, getDimensions());
+        final CyclicBarrier b = new CyclicBarrier(listOfBorders.size()+1);
 		for (BorderMarkerInfo bmi:listOfBorders){
-			Stack<Integer> internalNodes = new Stack<Integer>();
-			internalNodes.push(bmi.insideNode);
-			Stack<Integer> usedNodes = new Stack<Integer>();
-			for(int bn:bmi.borderNodes){ //border nodes added as used nodes to decrease complexity in code
-				usedNodes.add(bn);
-			}
-			Elements listOfMarkerElements = new Elements();//the place to save the elements of this marker
-			while (!internalNodes.empty()){
-				int node = internalNodes.pop();
-				usedNodes.push(node);
-				Elements elements =  listOfBorderElements.getElementsWithNode(node);
-				List<Integer> nodes = elements.getNodes();
-				for (int n:nodes){
-					if (!usedNodes.contains(n)){
-						internalNodes.add(n);
-					}
-				}
-				listOfMarkerElements.add(elements);
-			}
-			bm.add(bmi.name, listOfMarkerElements);
+			bm.add(bmi.name, getBorderElements(bmi, borderElements, b));
 		}
-		this.putExtra(MARKER_TAGS, bm);
+        try {
+            b.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (BrokenBarrierException e) {
+            e.printStackTrace();
+        }
+        this.putExtra(MARKER_TAGS, bm);
 		return true;
 	}
+
+    private Elements getBorderElements(final BorderMarkerInfo bmi, final Elements borderElements, final CyclicBarrier b){
+        final Elements listOfMarkerElements = new Elements();//the place to save the elements of this marker
+        Thread t = new Thread() {
+            public void run() {
+                Stack<Integer> internalNodes = new Stack<Integer>();
+                internalNodes.push(bmi.insideNode);
+                Stack<Integer> usedNodes = new Stack<Integer>();
+                for (int bn: bmi.borderNodes)
+
+                { //border nodes added as used nodes to decrease complexity in code
+                    usedNodes.add(bn);
+                }
+
+                //listOfMarkerElements = new Elements();//the place to save the elements of this marker
+                while (!internalNodes.empty())
+
+                {
+                    int node = internalNodes.pop();
+                    usedNodes.push(node);
+                    Elements elements = borderElements.getElementsWithNode(node);
+                    List<Integer> nodes = elements.getNodes();
+                    for (int n : nodes) {
+                        if (!usedNodes.contains(n)) {
+                            internalNodes.add(n);
+                        }
+                    }
+                    listOfMarkerElements.add(elements);
+                }
+                try {
+                    b.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (BrokenBarrierException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        t.start();
+        return listOfMarkerElements;
+    }
 
 	/**
 	 * Gets the elements of a given dimension of the mesh formed by a list of nodes.
@@ -140,25 +172,25 @@ public class Mesh {
 	 * @return the all elements
 	 */
 	private Elements getAllElements(List<Integer> listOfNodes, int dimensions){
+
 		Elements result = new Elements();
 		Element e = null;
-		for (int i=0; i<listOfNodes.size(); i++){
-			int counter = 0;
+		for (int i=0; i<listOfNodes.size()-1; i++){
+			Elements tempElements = mElements.getElementsWithNode(listOfNodes.get(i));
 			for (int j=i+1; j<listOfNodes.size(); j++){
 				if (dimensions==2){
-					e = mElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j)});
+					e = tempElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j)});
 					if (e!=null){
 						result.add(e);
-						counter++;
 					}
 				} else if (dimensions==3){
 					for (int k=j+1; k<listOfNodes.size(); k++){
-						e = mElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j),listOfNodes.get(k)});
+						e = tempElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j),listOfNodes.get(k)});
 						if (e!=null){
 							result.add(e);
 						}
 						for (int l=k+1; l<listOfNodes.size(); l++){
-							e = mElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j),listOfNodes.get(k),listOfNodes.get(l)});
+							e = tempElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j),listOfNodes.get(k),listOfNodes.get(l)});
 							if (e!=null && e.getType()==ElementType.Rectangle){
 								result.add(e);
 							}
@@ -166,7 +198,6 @@ public class Mesh {
 					}
 				}
 			}
-
 		}
 		return result;
 	}
@@ -185,6 +216,9 @@ public class Mesh {
 						}
 					}
 				}
+			}
+			if (dimensions==3){
+				//TODO - process to eliminate non border elements 
 			}
 		}
 		return result;

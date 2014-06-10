@@ -3,7 +3,6 @@ package com.meshtransformer.meshformat;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -25,40 +24,39 @@ public class App
 	public static void main( String[] args )
 	{
 
-		Path f = Paths.get("C:\\Users\\Alf\\Desktop\\channel propio gid\\channel propio gid grande.msh"); 
+		Path f = Paths.get("C:\\SU2\\tecla\\tecla.msh"); 
 		//Path out = Paths.get("C:\\SU2\\ejemplo\\mesh_NACA0012_inv.su2");
-		Path out2 = Paths.get("C:\\SU2\\channel propio gid\\channel propio gid grande con bordes.txt");
+		Path out2 = Paths.get("C:\\SU2\\tecla\\tecla_paralelo.SU2");
 		GIDMSH s = new GIDMSH();
 		SU2 outs = new SU2();
 		Mesh m = new Mesh();
 		List<BorderMarkerInfo> border = new ArrayList<Extra.BorderMarkerInfo>();
 		
 		BorderMarkerInfo bmi = new Extra.BorderMarkerInfo();
-		bmi.borderNodes = new int[]{0, 59};
-		bmi.insideNode = 39;
+		bmi.borderNodes = new int[]{109997, 0};
+		bmi.insideNode = 107512;
 		bmi.name = "inlet";
 		border.add(bmi);
 		
 		bmi = new Extra.BorderMarkerInfo();
-		bmi.borderNodes = new int[]{0, 165};
+		bmi.borderNodes = new int[]{0, 372268};
 		bmi.name = "lower_wall";
-		bmi.insideNode = 75;
+		bmi.insideNode = 265;
 		border.add(bmi);
 		
 		bmi = new Extra.BorderMarkerInfo();
-		bmi.borderNodes = new int[]{165, 175};
+		bmi.borderNodes = new int[]{372268, 381193};
 		bmi.name = "outlet";
-		bmi.insideNode = 174;
+		bmi.insideNode = 372270;
 		border.add(bmi);
 		
 		bmi = new Extra.BorderMarkerInfo();
-		bmi.borderNodes = new int[]{59, 175};
+		bmi.borderNodes = new int[]{109997, 381193};
 		bmi.name = "upper_wall";
-		bmi.insideNode = 102;
+		bmi.insideNode = 110048;
 		border.add(bmi);
 		
-		
-		List<Integer> lista = extractBorderNodes(Paths.get("C:\\Users\\Alf\\Desktop\\listado borde.txt"));
+		List<Integer> lista = extractBorderNodes(Paths.get("C:\\SU2\\tecla\\tecla_borde.txt"));
 				try {
 					s.read(f, m);
 					m.addBordersMarkers(lista, border);
