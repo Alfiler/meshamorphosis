@@ -55,7 +55,7 @@ public class SU2 implements FormatInterface {
 			case 3: et = ElementType.Line; break;
 			case 5: et = ElementType.Triangle; lis[2]=(Integer.parseInt(str_elements[3])); break;
 			case 9: et = ElementType.Rectangle; lis[2]=(Integer.parseInt(str_elements[3])); lis[3]=(Integer.parseInt(str_elements[4])); break;
-			case 10: et = ElementType.Tetrahedral; lis[2]=(Integer.parseInt(str_elements[3])); lis[3]=(Integer.parseInt(str_elements[4])); break;
+			case 10: et = ElementType.Tetrahedra; lis[2]=(Integer.parseInt(str_elements[3])); lis[3]=(Integer.parseInt(str_elements[4])); break;
 			case 12: et = ElementType.Hexahedral; lis[2]=(Integer.parseInt(str_elements[3])); lis[3]=(Integer.parseInt(str_elements[4])); lis[4]=(Integer.parseInt(str_elements[5])); lis[5]=(Integer.parseInt(str_elements[6])); lis[6]=(Integer.parseInt(str_elements[7])); lis[7]=(Integer.parseInt(str_elements[8])); break;
 			case 13: et = ElementType.Wedge; lis[2]=(Integer.parseInt(str_elements[3])); lis[3]=(Integer.parseInt(str_elements[4])); lis[4]=(Integer.parseInt(str_elements[5])); lis[5]=(Integer.parseInt(str_elements[6])); break;
 			case 14: et = ElementType.Pyramid; lis[2]=(Integer.parseInt(str_elements[3])); lis[3]=(Integer.parseInt(str_elements[4])); lis[4]=(Integer.parseInt(str_elements[5])); break;
@@ -176,7 +176,7 @@ public class SU2 implements FormatInterface {
 		case Line:return 3; 
 		case Triangle:return 5; 
 		case Rectangle:return 9; 
-		case Tetrahedral:return 10; 
+		case Tetrahedra:return 10;
 		case Hexahedral:return 12; 
 		case Wedge:return 13; 
 		default :return 14; //pyramid

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.regex.Matcher;
@@ -84,7 +85,7 @@ public class GIDMSH implements FormatInterface{
             return false;
         }
         line = s.nextLine();
-        LinkedList<int[]> lines = new LinkedList<int[]>();
+        final ArrayBlockingQueue<int[]> lines = new ArrayBlockingQueue<int[]>(100);
         CyclicBarrier b = new CyclicBarrier(2);
         new convertLine(lines, m.mElements, e, b).start();
         while(!line.matches("End Elements")){
@@ -94,21 +95,21 @@ public class GIDMSH implements FormatInterface{
                 listElem[i-1]=(Integer.parseInt(elemStr[i])-1);//zero based
             }
             /*m.mElements.add(new Element(e, listElem));*/
-            lines.addLast(listElem);
+            lines.put(listElem);
             line = s.nextLine();
         }
-        lines.addLast(new int[0]);
+        lines.put(new int[0]);
         b.await();
         return true;
     }
 
     private class convertLine extends Thread{
-        private LinkedList<int[]> lines;
+        private ArrayBlockingQueue<int[]> lines;
         private CyclicBarrier b;
         private Elements elements;
         private ElementType e;
 
-        public convertLine(LinkedList<int[]> lines, Elements elements, ElementType e, CyclicBarrier b) {
+        public convertLine(ArrayBlockingQueue<int[]> lines, Elements elements, ElementType e, CyclicBarrier b) {
             this.lines = lines;
             this.elements = elements;
             this.e = e;
@@ -116,28 +117,20 @@ public class GIDMSH implements FormatInterface{
         }
         public void run(){
             int[] listElem;
-            while(lines.isEmpty());
-            listElem = lines.removeFirst();
-            while(!(listElem.length==0)){
-                /*String[] elemStr = line.split("\\s+");
-                int[] listElem = new int[elemStr.length-1];
-                for (int i=1; i<elemStr.length; i++){
-                    listElem[i-1]=(Integer.parseInt(elemStr[i])-1);//zero based
-                }*/
-                try {
-                    elements.add(new Element(e, listElem));
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-                while(lines.isEmpty());
-                listElem = lines.removeFirst();
-            }
             try {
+                listElem = lines.take();
+                while(!(listElem.length==0)){
+                    elements.add(new Element(e, listElem));
+                    listElem = lines.take();
+                }
+
                 b.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (BrokenBarrierException e) {
                 e.printStackTrace();
+            } catch (Exception e1) {
+                e1.printStackTrace();
             }
         }
     }

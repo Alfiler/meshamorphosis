@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Elements {
 
     public enum ElementType{
-        Line, Triangle, Rectangle, Tetrahedral, Hexahedral, Wedge, Pyramid
+        Line, Triangle, Rectangle, Tetrahedra, Hexahedral, Wedge, Pyramid
     }
 
     public static class Element implements Comparable<Element>{
@@ -24,8 +24,8 @@ public class Elements {
                 case Line: valid = listElem.length==2; break;
                 case Triangle: valid = listElem.length==3; break;
                 case Rectangle:
-                case Pyramid: valid = listElem.length==4; break;
-                case Tetrahedral: valid = listElem.length==5; break;
+                case Tetrahedra: valid = listElem.length==4; break;
+                case Pyramid: valid = listElem.length==5; break;
                 case Wedge: valid = listElem.length==6; break;
                 case Hexahedral: valid = listElem.length==8; break;
             }
@@ -87,7 +87,7 @@ public class Elements {
                 case Triangle: return(3);
                 case Rectangle:
                 case Pyramid: return(4);
-                case Tetrahedral: return(5);
+                case Tetrahedra: return(5);
                 case Wedge: return(6);
                 case Hexahedral: return(8);
             }
@@ -143,7 +143,7 @@ public class Elements {
                     case 1: return pn2==2;
                     case 2: return pn2==3;
                 }
-                case Tetrahedral: return (pn1!=-1 && pn2!=-1);
+                case Tetrahedra: return (pn1!=-1 && pn2!=-1);
                 case Hexahedral: switch (pn1){
                     case 0: return pn2==1 || pn2==3 || pn2==4;
                     case 1: return pn2==2 || pn2==5;
@@ -209,19 +209,6 @@ public class Elements {
             return conected;
         }
 
-		/*public boolean isSubElement(Element e){
-			if(this.conectedPoints.length>=e.conectedPoints.length)
-			for (int i = 0; i<subElements.size(); i++){
-				if (subElements.get(i).compareTo(e)==0){
-					return true;
-				}
-				if (subElements.get(i).isSubElement(e)){
-					return true;
-				}
-			}
-			return false;
-		}*/
-
         public Element formASubElement(int[] js){
             if (js.length>this.numberOfPoints()){ //the mElements can't form something with the nodes
                 return null;
@@ -242,7 +229,35 @@ public class Elements {
                         e.printStackTrace();
                     }
                 } else {
-                    //TODO - for 3 dimensions
+                    if (js.length==3){
+                        int conected = 0;
+                        conected+=this.areConectedNodes(js[0],js[1])?1:0;
+                        conected+=this.areConectedNodes(js[0],js[2])?1:0;
+                        conected+=this.areConectedNodes(js[1],js[2])?1:0;
+                        if (conected==3){
+                            try {
+                                return new Element(ElementType.Triangle, js);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    if (js.length==4){
+                        int conected = 0;
+                        conected+=this.areConectedNodes(js[0],js[1])?1:0;
+                        conected+=this.areConectedNodes(js[0],js[2])?1:0;
+                        conected+=this.areConectedNodes(js[0],js[3])?1:0;
+                        conected+=this.areConectedNodes(js[1],js[2])?1:0;
+                        conected+=this.areConectedNodes(js[1],js[3])?1:0;
+                        conected+=this.areConectedNodes(js[2],js[3])?1:0;
+                        if (conected==4){
+                            try {
+                                return new Element(ElementType.Rectangle, js);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
                 }
             }
             return null;
@@ -341,7 +356,7 @@ public class Elements {
         }
     }
 
-    public Element formAElement(int[] js){
+    public Element formASubElement(int[] js){
         lock.readLock().lock();
         try{
             List<Element> elementsWithNode = mNodes.get(js[0]);
@@ -360,7 +375,11 @@ public class Elements {
     public Elements getElementsWithNode(int node){
         lock.readLock().lock();
         try{
-            return new Elements(mNodes.get(new Integer(node)));
+            Elements es = new Elements();
+            if (mNodes.containsKey(new Integer(node))){
+                es = new Elements(mNodes.get(new Integer(node)));
+            }
+            return es;
         } finally {
             lock.readLock().unlock();
         }

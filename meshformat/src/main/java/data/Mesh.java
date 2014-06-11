@@ -1,16 +1,12 @@
 package data;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
 import data.Elements.Element;
-import data.Elements.ElementType;
 import data.Extra.BorderMarkerInfo;
 import data.Extra.BorderMarkers;
 
@@ -107,7 +103,7 @@ public class Mesh {
 
 		BorderMarkers bm = new BorderMarkers();
 
-		Elements borderElements = getAllBorderElements(listOfNodes, getDimensions());
+		Elements borderElements = getAllElements(listOfNodes, getDimensions());
         final CyclicBarrier b = new CyclicBarrier(listOfBorders.size()+1);
 		for (BorderMarkerInfo bmi:listOfBorders){
 			bm.add(bmi.name, getBorderElements(bmi, borderElements, b));
@@ -131,7 +127,6 @@ public class Mesh {
                 internalNodes.push(bmi.insideNode);
                 Stack<Integer> usedNodes = new Stack<Integer>();
                 for (int bn: bmi.borderNodes)
-
                 { //border nodes added as used nodes to decrease complexity in code
                     usedNodes.add(bn);
                 }
@@ -174,51 +169,44 @@ public class Mesh {
 	private Elements getAllElements(List<Integer> listOfNodes, int dimensions){
 
 		Elements result = new Elements();
-		Element e = null;
 		for (int i=0; i<listOfNodes.size()-1; i++){
 			Elements tempElements = mElements.getElementsWithNode(listOfNodes.get(i));
 			for (int j=i+1; j<listOfNodes.size(); j++){
-				if (dimensions==2){
-					e = tempElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j)});
+                Elements tempElements2 = tempElements.getElementsWithNode(listOfNodes.get(j));
+				if (dimensions==2 && tempElements2.size()>0){
+                    if (tempElements2.size()==1){
+                        result.add(tempElements2.formASubElement(new int[]{listOfNodes.get(i), listOfNodes.get(j)}));
+                    }
+                    /*e = tempElements.formASubElement(new int[]{listOfNodes.get(i),listOfNodes.get(j)});
 					if (e!=null){
 						result.add(e);
-					}
-				} else if (dimensions==3){
+					}*/
+				} else if (dimensions==3 && tempElements2.size()>0){
 					for (int k=j+1; k<listOfNodes.size(); k++){
-						e = tempElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j),listOfNodes.get(k)});
+                        Elements tempElements3 = tempElements2.getElementsWithNode(listOfNodes.get(k));
+                        if (tempElements3.size()==1){
+                            Element e = tempElements3.formASubElement(new int[]{listOfNodes.get(i), listOfNodes.get(j),listOfNodes.get(k)});
+                            if (e==null){
+                                for (int l=k+1; k<listOfNodes.size() && e==null; l++){
+                                    e = tempElements3.formASubElement(new int[]{listOfNodes.get(i), listOfNodes.get(j),listOfNodes.get(k), listOfNodes.get(l)});
+                                }
+                            }
+                            if (e!=null) {
+                                result.add(e);
+                            }
+                        }
+						/*e = tempElements.formASubElement(new int[]{listOfNodes.get(i),listOfNodes.get(j),listOfNodes.get(k)});
 						if (e!=null){
 							result.add(e);
 						}
 						for (int l=k+1; l<listOfNodes.size(); l++){
-							e = tempElements.formAElement(new int[]{listOfNodes.get(i),listOfNodes.get(j),listOfNodes.get(k),listOfNodes.get(l)});
+							e = tempElements.formASubElement(new int[]{listOfNodes.get(i),listOfNodes.get(j),listOfNodes.get(k),listOfNodes.get(l)});
 							if (e!=null && e.getType()==ElementType.Rectangle){
 								result.add(e);
 							}
-						}
+						}*/
 					}
 				}
-			}
-		}
-		return result;
-	}
-
-	private Elements getAllBorderElements(List<Integer> listOfNodes, int dimensions){
-		Elements result = getAllElements(listOfNodes, dimensions);
-		for(int i=0; i<listOfNodes.size(); i++){
-			Elements e1 = result.getElementsWithNode(listOfNodes.get(i));
-			if (dimensions==2 && e1.size()>2){
-				for (int j=i+1; j<listOfNodes.size(); j++){
-					Elements e2 = result.getElementsWithNode(listOfNodes.get(j));
-					if (e2.size()>2){
-						Element notBorderElement = result.formAElement(new int[]{listOfNodes.get(i), listOfNodes.get(j)});
-						if (notBorderElement!=null){
-							result.remove(notBorderElement);
-						}
-					}
-				}
-			}
-			if (dimensions==3){
-				//TODO - process to eliminate non border elements 
 			}
 		}
 		return result;
