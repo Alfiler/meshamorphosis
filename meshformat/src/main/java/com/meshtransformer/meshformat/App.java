@@ -19,39 +19,22 @@ import formats.SU2;
  * Hello world!
  *
  */
-public class App
-{
-    public static void main( String[] args )
-    {
+public class App {
+    public static void main(String[] args) {
 
-        Path f = Paths.get("C:\\SU2\\Esfera\\esfera.msh");
+        Path f = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Pantalones 3d\\Pantalones 0,1.gid\\Pantalones.msh");
         //Path out = Paths.get("C:\\SU2\\ejemplo\\mesh_NACA0012_inv.su2");
-        Path out2 = Paths.get("C:\\SU2\\Esfera\\esfera3.SU2");
+        Path out2 = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Pantalones 3d\\Pantalones 0,1.gid\\Pantalones.SU2");
+        Path bmipath = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Pantalones 3d\\Pantalones 0,1.gid\\BMI.txt");
+        Path borderpath = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Pantalones 3d\\Pantalones 0,1.gid\\borders.txt");
         GIDMSH s = new GIDMSH();
         SU2 outs = new SU2();
         Mesh m = new Mesh();
-        List<BorderMarkerInfo> border = new ArrayList<Extra.BorderMarkerInfo>();
+        List<BorderMarkerInfo> border = null;
 
-        BorderMarkerInfo bmi = new Extra.BorderMarkerInfo();
-        bmi.borderNodes = new int[]{25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40};
-        bmi.insideNode = 45;
-        bmi.name = "grande";
-        border.add(bmi);
-
-        bmi = new Extra.BorderMarkerInfo();
-        bmi.borderNodes = new int[]{26, 27, 28, 34, 35, 39, 40, 1, 3, 6, 13, 14};
-        bmi.insideNode = 8;
-        bmi.name = "pequeño";
-        border.add(bmi);
-
-        bmi = new Extra.BorderMarkerInfo();
-        bmi.borderNodes = new int[]{1, 3, 6, 13, 14, 35, 39, 25, 29, 30, 31, 32, 33, 36, 37, 38};
-        bmi.insideNode = 2;
-        bmi.name = "mediano";
-        border.add(bmi);
-
-        List<Integer> lista = extractBorderNodes(Paths.get("C:\\SU2\\Esfera\\esfera_bordes.txt"));
+        List<Integer> lista = extractBorderNodes(borderpath);
         try {
+            border = readBMI(bmipath,false);
             s.read(f, m);
             m.addBordersMarkers(lista, border);
             outs.write(out2, m);
@@ -68,16 +51,16 @@ public class App
 
     }
 
-    private static List<Integer> extractBorderNodes(Path in){
+    private static List<Integer> extractBorderNodes(Path in) {
         ArrayList<Integer> ret = new ArrayList<Integer>();
         try {
             Scanner s = new Scanner(new File(in.toString()));
             String line = "";
 
-            while(s.hasNext()){
+            while (s.hasNext()) {
                 line = s.nextLine();
                 String[] coord = line.split("\\s+");
-                ret.add(Integer.parseInt(coord[0])-1);
+                ret.add(Integer.parseInt(coord[0]) - 1);
             }
             s.close();
         } catch (FileNotFoundException e) {
@@ -85,5 +68,46 @@ public class App
             e.printStackTrace();
         }
         return ret;
+    }
+
+
+    private static List<BorderMarkerInfo> readBMI(Path in, boolean zeroBased) throws FileNotFoundException {
+        ArrayList<Integer> ret = new ArrayList<Integer>();
+        Scanner s = new Scanner(new File(in.toString()));
+        String line = s.nextLine();
+
+        List<BorderMarkerInfo> border = new ArrayList<Extra.BorderMarkerInfo>();
+
+        int numBMI = Integer.parseInt(line);
+        line = s.nextLine();
+        for (int i = 0; i < numBMI; i++) {
+            BorderMarkerInfo bmi = new Extra.BorderMarkerInfo();
+            bmi.name = line;
+            line = s.nextLine();
+            bmi.type = line.equals("1")? BorderMarkerInfo.BMIType.ALL_MARKER_NODES:BorderMarkerInfo.BMIType.CONSTRAINED;
+            line = s.nextLine();
+            bmi.insideNode = Integer.parseInt(line)- (zeroBased ? 0 : 1);
+            boolean hasnode = true;
+
+            List<Integer> borderNodes = new ArrayList<Integer>();
+            while (hasnode) {
+                if (s.hasNext()) {
+                    line = s.nextLine();
+                    String nodeStr = line.split(" ")[0];
+                    try {
+                        int num = Integer.parseInt(nodeStr);
+                        num = num - (zeroBased ? 0 : 1);
+                        borderNodes.add(num);
+                    } catch (NumberFormatException e) {
+                        hasnode = false;
+                    }
+                    bmi.borderNodes = borderNodes.toArray(new Integer[0]);
+                } else {
+                    hasnode = false;
+                }
+            }
+            border.add(bmi);
+        }
+        return border;
     }
 }

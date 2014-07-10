@@ -6,9 +6,15 @@ import java.util.Set;
 public class Extra {
 
 	public static class BorderMarkerInfo{
+
+        public enum BMIType{
+            ALL_MARKER_NODES, CONSTRAINED
+        }
+
 		public String name;
-		public int[] borderNodes;
+		public Integer[] borderNodes;
 		public int insideNode;
+        public BMIType type;
 		
 		public boolean isBorderNode(int node){
 			for (int i:borderNodes){
