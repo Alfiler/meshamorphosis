@@ -1,4 +1,4 @@
-package formats;
+package com.meshtransformer.meshformat.formats;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,11 +13,11 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import data.Elements;
-import data.Elements.Element;
-import data.Elements.ElementType;
-import data.Extra.BorderMarkers;
-import data.Mesh;
+import com.meshtransformer.meshformat.data.Elements;
+import com.meshtransformer.meshformat.data.Elements.Element;
+import com.meshtransformer.meshformat.data.Elements.ElementType;
+import com.meshtransformer.meshformat.data.Extra.BorderMarkers;
+import com.meshtransformer.meshformat.data.Mesh;
 
 public class SU2 implements FormatInterface {
 

@@ -1,4 +1,4 @@
-package formats;
+package com.meshtransformer.meshformat.formats;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

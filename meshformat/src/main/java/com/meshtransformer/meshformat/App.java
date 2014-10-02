@@ -9,24 +9,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import data.Extra;
-import data.Extra.BorderMarkerInfo;
-import data.Mesh;
-import formats.GIDMSH;
-import formats.SU2;
+import com.meshtransformer.meshformat.data.Extra;
+import com.meshtransformer.meshformat.data.Extra.BorderMarkerInfo;
+import com.meshtransformer.meshformat.data.Mesh;
+import com.meshtransformer.meshformat.formats.GIDMSH;
+import com.meshtransformer.meshformat.formats.SU2;
 
-/**
- * Hello world!
- *
- */
 public class App {
     public static void main(String[] args) {
 
-        Path f = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Pantalones 3d\\Pantalones 0,1.gid\\Pantalones.msh");
+        Path f = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Tecla3d\\tecla1.00\\tecla.msh");
         //Path out = Paths.get("C:\\SU2\\ejemplo\\mesh_NACA0012_inv.su2");
-        Path out2 = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Pantalones 3d\\Pantalones 0,1.gid\\Pantalones.SU2");
-        Path bmipath = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Pantalones 3d\\Pantalones 0,1.gid\\BMI.txt");
-        Path borderpath = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Pantalones 3d\\Pantalones 0,1.gid\\borders.txt");
+        Path out2 = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Tecla3d\\tecla1.00\\tecla.SU2");
+        Path bmipath = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Tecla3d\\tecla1.00\\BMI.txt");
+        Path borderpath = Paths.get("C:\\Users\\Alf\\Dropbox\\Modelos gid\\Tecla3d\\tecla1.00\\borders.txt");
         GIDMSH s = new GIDMSH();
         SU2 outs = new SU2();
         Mesh m = new Mesh();

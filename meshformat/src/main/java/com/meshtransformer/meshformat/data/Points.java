@@ -1,4 +1,4 @@
-package data;
+package com.meshtransformer.meshformat.data;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

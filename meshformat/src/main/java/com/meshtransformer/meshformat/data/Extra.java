@@ -1,4 +1,4 @@
-package data;
+package com.meshtransformer.meshformat.data;
 
 import java.util.HashMap;
 import java.util.Set;

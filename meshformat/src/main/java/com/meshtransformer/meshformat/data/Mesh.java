@@ -1,15 +1,13 @@
-package data;
+package com.meshtransformer.meshformat.data;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 
-import data.Elements.Element;
-import data.Extra.BorderMarkerInfo;
-import data.Extra.BorderMarkers;
+import com.meshtransformer.meshformat.data.Elements.Element;
+import com.meshtransformer.meshformat.data.Extra.BorderMarkerInfo;
+import com.meshtransformer.meshformat.data.Extra.BorderMarkers;
 
 // TODO: Auto-generated Javadoc
 /**
